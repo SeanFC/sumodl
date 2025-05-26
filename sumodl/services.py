@@ -5,14 +5,15 @@ import logging
 from sumodl.repo import ArkeRepo, NHKSumoRepo
 from sumodl.domain import get_current_season_episodes
 
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
+
 
 def update_episodes(arke: ArkeRepo, nhk: NHKSumoRepo):
     logger.info("Updating available episodes")
 
     available_episodes = set(arke.get_episodes())
     possible_episodes = set(get_current_season_episodes(datetime.now()))
-    unfound_episodes = possible_episodes - available_episodes 
+    unfound_episodes = possible_episodes - available_episodes
 
     logger.info(f"Found {len(unfound_episodes)} new possible episodes")
 
