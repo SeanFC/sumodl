@@ -1,12 +1,25 @@
 - name: Run sumodl service 
   hosts: myhosts
   gather_facts: false
+  vars:
+    tracked_files: "{{ lookup('pipe', 'git ls-files') | split('\n') }}"
   tasks:
+    - name: Create parent directories on remote
+      file:
+        path: "~/sumodl/{{ item | dirname }}"
+        state: directory
+        mode: '0755'
+      loop: "{{ tracked_files }}"
+      loop_control:
+        label: "{{ item | dirname }}"
+
     - name: Copy over files 
       ansible.builtin.copy:
-        src: .
-        dest: ~/sumodl
-
+        src: "{{ item }}"
+        dest: "~/sumodl/{{ item }}"
+        mode: '0644'
+      loop: "{{ tracked_files }}"
+    
     - name: Tear down existing services
       community.docker.docker_compose_v2:
         project_src: sumodl
@@ -15,5 +28,10 @@
     - name: Create and start services
       community.docker.docker_compose_v2:
         project_src: sumodl
+        state: present
+        build: "always"
       environment:
-        MEDIA_DIRECTORY: /tmp
+        MEDIA_DIRECTORY: "{{ MEDIA_DIRECTORY }}"
+        # The deploy can't find the correct DNS to do the needed debian downloads, maybe because of tailscale.
+        # Building like this fixes this, but I don't know why
+        DOCKER_BUILDKIT: "0"

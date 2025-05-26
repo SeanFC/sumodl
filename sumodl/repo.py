@@ -4,15 +4,14 @@ from datetime import datetime, timedelta, date
 from dataclasses import dataclass
 from pathlib import Path
 import requests
+import logging
 
 from playwright.sync_api import sync_playwright, Playwright
 from typing import Tuple
 from dotenv import load_dotenv
 import os
 from typing import Iterator
-from sumodl.domain import SumoFilm, Episode
-
-
+from sumodl.domain import SumoFilm, Episode, STARTING_TOURNAMENT, EPISODES_PER_SEASON , TOURNAMENTS_PER_YEAR
 
 class NHKSumoRepo():
     _BASE_URL = Path("https://www3.nhk.or.jp/nhkworld/en/tv/sumo/tournament")
@@ -21,9 +20,12 @@ class NHKSumoRepo():
 
     def get_film(self, episode) -> SumoFilm:
         url = self._BASE_URL / self._get_episode_url(episode)
+        logging.debug(f"Finding episode at {url=}")
 
         with sync_playwright() as playwright:
             content_descriptor_url, content_thumbnail_url = self._get_episode_metadata(playwright, url)
+
+        logging.debug(f"Finding episdoe info for {content_descriptor_url=} and {content_thumbnail_url=}")
         return self._decode_film(content_descriptor_url, content_thumbnail_url)
 
     
@@ -142,6 +144,3 @@ class ArkeRepo():
                     season_id = int(root.name.split(" ")[-1]),
                     episode = int(file.split(".")[0])
                     )
-
-
-

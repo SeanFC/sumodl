@@ -13,7 +13,7 @@ from typing import Iterator
 
 STARTING_TOURNAMENT = date(year = 2025, month=5, day=1)
 #TODO: Set this back
-EPISODES_PER_SEASON = 2
+EPISODES_PER_SEASON = 3
 TOURNAMENTS_PER_YEAR = 6
 
 @dataclass(frozen=True)

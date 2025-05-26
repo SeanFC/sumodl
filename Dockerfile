@@ -16,4 +16,5 @@ COPY crontab /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab
 RUN /usr/bin/crontab /etc/cron.d/crontab
 
-CMD ["cron", "-f"]
+# Run the system once and then start cron to keep running
+CMD uv --directory /app run python -m sumodl && cron -f
