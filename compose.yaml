@@ -1,0 +1,9 @@
+services:
+  sumodl:
+    build:
+      context: .         
+      dockerfile: Dockerfile  
+    volumes:
+     - "${MEDIA_DIRECTORY}:/media"
+    environment:
+     - MEDIA_DIRECTORY=/media
