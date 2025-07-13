@@ -24,3 +24,10 @@ With [ansible](https://docs.ansible.com/), deploy to a running docker compose in
 ansible-playbook deploy.yaml -i inventory.yaml
 ```
 where inventory has hosts under `myhosts` with the vars the same as `.env`.
+
+## Development 
+Check and fix code with 
+```
+uv run ruff format
+uv run pyright
+```

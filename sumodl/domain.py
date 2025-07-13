@@ -27,8 +27,8 @@ class SumoFilm:
 #   * the season id could be wrong, (div 31 not months) and the season starts on the 'first or second Sunday)
 #   *  Just because we're in one season doesn't mean all the episodes are available yet
 def get_current_season_episodes(cur_time: datetime) -> Iterator[Episode]:
-    season_id = int((cur_time.date() - STARTING_TOURNAMENT).days / 31) 
-    season_id /= MONTHS_PER_YEAR/TOURNAMENTS_PER_YEAR
+    season_id = int((cur_time.date() - STARTING_TOURNAMENT).days / 31)
+    season_id /= MONTHS_PER_YEAR / TOURNAMENTS_PER_YEAR
     season_id += 1
     season_id = int(season_id)
 

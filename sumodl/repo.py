@@ -12,9 +12,16 @@ from sumodl.domain import (
     TOURNAMENTS_PER_YEAR,
 )
 
+
 class NoEpisode(Exception):
     def __init__(self):
         super().__init__("Episode not available")
+
+class BadEpisodeData(Exception):
+    def __init__(self, section):
+        super().__init__(f"The {section} of the episode couldn't be found")
+
+
 
 class NHKSumoRepo:
     _BASE_URL = Path("https://www3.nhk.or.jp/nhkworld/en/tv/sumo/tournament")
@@ -22,15 +29,15 @@ class NHKSumoRepo:
     def __init__(self, debug=False):
         self._debug = debug
 
-    #TODO: Can throw
+    # TODO: Can throw
     def get_film(self, episode) -> SumoFilm:
         url = self._BASE_URL / self._get_episode_url(episode)
         logging.debug(f"Finding episode at {url=}")
 
         with sync_playwright() as playwright:
             try:
-                content_descriptor_url, content_thumbnail_url = self._get_episode_metadata(
-                    playwright, url
+                content_descriptor_url, content_thumbnail_url = (
+                    self._get_episode_metadata(playwright, url)
                 )
             except Error as e:
                 raise NoEpisode()
@@ -61,9 +68,7 @@ class NHKSumoRepo:
             if "moviePlayer" in frame.name:
                 break
         else:
-            # TODO: Error
-            print("Couldn't find frame")
-            return
+            raise BadEpisodeData("frame")
 
         requests = []
         page.on("request", lambda req: requests.append(req))
@@ -73,17 +78,13 @@ class NHKSumoRepo:
             if "getMediaByParam" in video_request.url:
                 break
         else:
-            # TODO: error
-            print("Couldn't find media request")
-            return
+            raise BadEpisodeData("media request")
 
         for thumb_request in requests:
             if "thumbnail" in thumb_request.url and ".jpg" in thumb_request.url:
                 break
         else:
-            # TODO: error
-            print("Couldn't find thumbnail")
-            return
+            raise BadEpisodeData("thumbnail")
 
         browser.close()
 

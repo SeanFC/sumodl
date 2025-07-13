@@ -23,7 +23,7 @@ def update_episodes(arke: ArkeRepo, nhk: NHKSumoRepo):
         try:
             film = nhk.get_film(episode)
         except NoEpisode as e:
-            logger.warning(f"Couldn\'t find S{episode.season_id}-E{episode.episode}")
+            logger.warning(f"Couldn't find S{episode.season_id}-E{episode.episode}")
             continue
 
         arke.pull_episode(film)
