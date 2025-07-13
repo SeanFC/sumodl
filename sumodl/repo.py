@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 import logging
 
-from playwright.sync_api import sync_playwright, Playwright
+from playwright.sync_api import sync_playwright, Playwright, Error
 from typing import Tuple, Iterator
 from sumodl.domain import (
     SumoFilm,
@@ -12,6 +12,9 @@ from sumodl.domain import (
     TOURNAMENTS_PER_YEAR,
 )
 
+class NoEpisode(Exception):
+    def __init__(self):
+        super().__init__("Episode not available")
 
 class NHKSumoRepo:
     _BASE_URL = Path("https://www3.nhk.or.jp/nhkworld/en/tv/sumo/tournament")
@@ -19,14 +22,18 @@ class NHKSumoRepo:
     def __init__(self, debug=False):
         self._debug = debug
 
+    #TODO: Can throw
     def get_film(self, episode) -> SumoFilm:
         url = self._BASE_URL / self._get_episode_url(episode)
         logging.debug(f"Finding episode at {url=}")
 
         with sync_playwright() as playwright:
-            content_descriptor_url, content_thumbnail_url = self._get_episode_metadata(
-                playwright, url
-            )
+            try:
+                content_descriptor_url, content_thumbnail_url = self._get_episode_metadata(
+                    playwright, url
+                )
+            except Error as e:
+                raise NoEpisode()
 
         logging.debug(
             f"Finding episdoe info for {content_descriptor_url=} and {content_thumbnail_url=}"
@@ -111,7 +118,7 @@ class NHKSumoRepo:
 
 
 class ArkeRepo:
-    _SUMO_SHOW_NAME = "Grand Sumo (1926 - )"
+    _SUMO_SHOW_NAME = "Grand Sumo (1926-)"
 
     def __init__(self, path: Path):
         self._base_path = path

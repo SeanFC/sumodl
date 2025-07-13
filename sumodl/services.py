@@ -2,7 +2,7 @@ from datetime import datetime
 
 import logging
 
-from sumodl.repo import ArkeRepo, NHKSumoRepo
+from sumodl.repo import ArkeRepo, NHKSumoRepo, NoEpisode
 from sumodl.domain import get_current_season_episodes
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,11 @@ def update_episodes(arke: ArkeRepo, nhk: NHKSumoRepo):
     # You could do this async, we're just not for simplicity
     for episode in unfound_episodes:
         logger.info(f"Attemping to pull S{episode.season_id}-E{episode.episode}")
-        film = nhk.get_film(episode)
+        try:
+            film = nhk.get_film(episode)
+        except NoEpisode as e:
+            logger.warning(f"Couldn\'t find S{episode.season_id}-E{episode.episode}")
+            continue
+
         arke.pull_episode(film)
         logger.info(f"Successfully pulled S{episode.season_id}-E{episode.episode}")
