@@ -3,7 +3,9 @@ from pathlib import Path
 import requests
 import logging
 
-from playwright.sync_api import sync_playwright, Playwright, Error
+from playwright.sync_api import sync_playwright, Playwright
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from typing import Tuple, Iterator
 from sumodl.domain import (
     SumoFilm,
@@ -43,7 +45,7 @@ class NHKSumoRepo:
                 content_descriptor_url, content_thumbnail_url = (
                     self._get_episode_metadata(playwright, url)
                 )
-            except Error as e:
+            except PlaywrightError as e:
                 raise NoEpisode() from e
             except BadEpisodeData as e:
                 raise NoEpisode() from e
@@ -68,24 +70,17 @@ class NHKSumoRepo:
 
     # TODO: Can throw
     def _get_episode_metadata(self, playwright: Playwright, url) -> Tuple[str, str]:
-        browser = playwright.firefox.launch(headless=not self._debug)
-        context  = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            viewport={'width': 1280, 'height': 800},
-            locale="en-US",
-            timezone_id="America/New_York"
-         )
-        page = context.new_page()
-        page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        browser = playwright.chromium.launch(headless=not self._debug)
+        page = browser.new_page()
 
         page.goto(url, wait_until="domcontentloaded")
 
         # Account for a cookies consent box
-        # Note: This is temperamental, maybe need to wait for longer than network idle?
+        # Note: This is temperamental, maybe need to wait for longer
         try:
-            page.wait_for_selector("button:has-text('Accept')", timeout=300)
+            page.wait_for_selector("button:has-text('Accept')", timeout=3000)
             page.click("button:has-text('Accept')")
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             pass
 
         # Get the main video frame

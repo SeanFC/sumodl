@@ -18,11 +18,13 @@ def update_episodes(arke: ArkeRepo, nhk: NHKSumoRepo):
     logger.info(f"Found {len(unfound_episodes)} new possible episodes")
 
     # You could do this async, we're just not for simplicity
-    for episode in unfound_episodes:
+    # for episode in unfound_episodes:
+    for episode in [Episode(2, 1)]:
         logger.info(f"Attemping to pull S{episode.season_id}-E{episode.episode}")
         try:
             film = nhk.get_film(episode)
         except NoEpisode as e:
+            logger.exception(e)
             logger.warning(f"Couldn't find S{episode.season_id}-E{episode.episode}")
             continue
 
