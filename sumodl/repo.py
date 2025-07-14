@@ -70,13 +70,13 @@ class NHKSumoRepo:
 
     # TODO: Can throw
     def _get_episode_metadata(self, playwright: Playwright, url) -> Tuple[str, str]:
-        browser = playwright.chromium.launch(headless=not self._debug)
-        page = browser.new_page()
-
-        page.goto(url, wait_until="domcontentloaded")
+        browser = playwright.firefox.launch(headless=not self._debug)
+        context  = browser.new_context(viewport={'width': 1280, 'height': 800})
+        page = context.new_page()
+        page.goto(url, wait_until="load")
 
         # Account for a cookies consent box
-        # Note: This is temperamental, maybe need to wait for longer
+        # Note: This is temperamental, maybe need to wait for longer 
         try:
             page.wait_for_selector("button:has-text('Accept')", timeout=3000)
             page.click("button:has-text('Accept')")

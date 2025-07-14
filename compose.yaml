@@ -5,12 +5,12 @@ services:
       dockerfile: Dockerfile  
     volumes:
      - "${MEDIA_DIRECTORY}:/media"
-     - /tmp/.X11-unix:/tmp/.X11-unix
-     - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority
+     #- /tmp/.X11-unix:/tmp/.X11-unix
+     #- ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority
     environment:
      - MEDIA_DIRECTORY=/media
-     - DISPLAY=${DISPLAY}
-     - XAUTHORITY=/tmp/.Xauthority
-     - HOME=/root
-    network_mode: host  # allows DISPLAY to match host IP
-    ipc: host           # required by some browsers
+     #- DISPLAY=${DISPLAY}
+     #- XAUTHORITY=/tmp/.Xauthority
+     #- HOME=/root
+    #network_mode: host  # allows DISPLAY to match host IP
+    #ipc: host           # required by some browsers

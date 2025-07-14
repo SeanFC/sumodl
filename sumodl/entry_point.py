@@ -35,6 +35,6 @@ def command_line():
     _setup_logging(args.log)
 
     arke = ArkeRepo(Path(str(media_directory)))
-    nhk = NHKSumoRepo(True)
+    nhk = NHKSumoRepo()
 
     update_episodes(arke, nhk)

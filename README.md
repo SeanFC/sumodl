@@ -28,6 +28,6 @@ where inventory has hosts under `myhosts` with the vars the same as `.env`.
 ## Development 
 Check and fix code with 
 ```
-uv run ruff format
 uv run pyright
+uv run ruff format
 ```
