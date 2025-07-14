@@ -3,14 +3,12 @@ services:
     build:
       context: .         
       dockerfile: Dockerfile  
+      # The deploy was having problems with DNS when building
+      network: host
     volumes:
      - "${MEDIA_DIRECTORY}:/media"
-     #- /tmp/.X11-unix:/tmp/.X11-unix
-     #- ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority
     environment:
      - MEDIA_DIRECTORY=/media
-     #- DISPLAY=${DISPLAY}
-     #- XAUTHORITY=/tmp/.Xauthority
-     #- HOME=/root
-    #network_mode: host  # allows DISPLAY to match host IP
-    #ipc: host           # required by some browsers
+     - PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    dns:
+     - 8.8.8.8

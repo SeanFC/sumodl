@@ -71,12 +71,12 @@ class NHKSumoRepo:
     # TODO: Can throw
     def _get_episode_metadata(self, playwright: Playwright, url) -> Tuple[str, str]:
         browser = playwright.firefox.launch(headless=not self._debug)
-        context  = browser.new_context(viewport={'width': 1280, 'height': 800})
+        context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
         page.goto(url, wait_until="load")
 
         # Account for a cookies consent box
-        # Note: This is temperamental, maybe need to wait for longer 
+        # Note: This is temperamental, maybe need to wait for longer
         try:
             page.wait_for_selector("button:has-text('Accept')", timeout=3000)
             page.click("button:has-text('Accept')")
@@ -84,6 +84,10 @@ class NHKSumoRepo:
             pass
 
         # Get the main video frame
+        try:
+            page.wait_for_selector("iframe", timeout=5000)
+        except PlaywrightTimeoutError:
+            raise BadEpisodeData("frame")
         for frame in page.frames:
             if "moviePlayer" in frame.name:
                 break
