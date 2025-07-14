@@ -10,17 +10,21 @@ from sumodl.domain import (
     Episode,
     STARTING_TOURNAMENT,
     TOURNAMENTS_PER_YEAR,
+    MONTHS_PER_YEAR,
+    TOURNAMENTS_PER_YEAR,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class NoEpisode(Exception):
     def __init__(self):
         super().__init__("Episode not available")
 
+
 class BadEpisodeData(Exception):
     def __init__(self, section):
         super().__init__(f"The {section} of the episode couldn't be found")
-
 
 
 class NHKSumoRepo:
@@ -40,10 +44,12 @@ class NHKSumoRepo:
                     self._get_episode_metadata(playwright, url)
                 )
             except Error as e:
-                raise NoEpisode()
+                raise NoEpisode() from e
+            except BadEpisodeData as e:
+                raise NoEpisode() from e
 
         logging.debug(
-            f"Finding episdoe info for {content_descriptor_url=} and {content_thumbnail_url=}"
+            f"Finding episode info for {content_descriptor_url=} and {content_thumbnail_url=}"
         )
         return self._decode_film(content_descriptor_url, content_thumbnail_url)
 
@@ -51,17 +57,36 @@ class NHKSumoRepo:
         year = STARTING_TOURNAMENT.year + int(
             (episode.season_id - 1) / TOURNAMENTS_PER_YEAR
         )
-        month = (
-            STARTING_TOURNAMENT.month + (episode.season_id - 1) % TOURNAMENTS_PER_YEAR
+        month = STARTING_TOURNAMENT.month
+        month += (
+            (MONTHS_PER_YEAR / TOURNAMENTS_PER_YEAR)
+            * (episode.season_id - 1)
+            % TOURNAMENTS_PER_YEAR
         )
+        month = int(month)
         return f"{year}{month:02}/day{episode.episode}.html"
 
     # TODO: Can throw
     def _get_episode_metadata(self, playwright: Playwright, url) -> Tuple[str, str]:
-        browser = playwright.chromium.launch(headless=not self._debug)
-        page = browser.new_page()
+        browser = playwright.firefox.launch(headless=not self._debug)
+        context  = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={'width': 1280, 'height': 800},
+            locale="en-US",
+            timezone_id="America/New_York"
+         )
+        page = context.new_page()
+        page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
-        page.goto(url, wait_until="networkidle")
+        page.goto(url, wait_until="domcontentloaded")
+
+        # Account for a cookies consent box
+        # Note: This is temperamental, maybe need to wait for longer than network idle?
+        try:
+            page.wait_for_selector("button:has-text('Accept')", timeout=300)
+            page.click("button:has-text('Accept')")
+        except TimeoutError:
+            pass
 
         # Get the main video frame
         for frame in page.frames:

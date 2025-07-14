@@ -2,8 +2,8 @@ from datetime import datetime
 
 import logging
 
-from sumodl.repo import ArkeRepo, NHKSumoRepo, NoEpisode
-from sumodl.domain import get_current_season_episodes
+from sumodl.repo import ArkeRepo, NHKSumoRepo, NoEpisode, BadEpisodeData
+from sumodl.domain import get_current_season_episodes, Episode
 
 logger = logging.getLogger(__name__)
 
