@@ -1,1 +1,0 @@
-10 13 * * * /usr/bin/uv --directory /app run python -m sumodl > /proc/1/fd/1 2>/proc/1/fd/2

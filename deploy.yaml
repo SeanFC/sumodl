@@ -2,6 +2,7 @@
   hosts: myhosts
   gather_facts: false
   vars:
+    MEDIA_DIRECTORY: "/mnt/toshiba/media/completed/tv"
     tracked_files: "{{ lookup('pipe', 'git ls-files') | split('\n') }}"
   tasks:
     - name: Create parent directories on remote
@@ -19,6 +20,11 @@
         dest: "~/sumodl/{{ item }}"
         mode: '0644'
       loop: "{{ tracked_files }}"
+    - name: Write .env file
+      copy:
+        dest: "~/sumodl/.env"
+        content: |
+          MEDIA_DIRECTORY={{ MEDIA_DIRECTORY }}
     
     - name: Tear down existing services
       community.docker.docker_compose_v2:
@@ -31,7 +37,6 @@
         state: present
         build: "always"
       environment:
-        MEDIA_DIRECTORY: "{{ MEDIA_DIRECTORY }}"
         # The deploy can't find the correct DNS to do the needed debian downloads, maybe because of tailscale.
         # Building like this fixes this, but I don't know why
         DOCKER_BUILDKIT: "0"

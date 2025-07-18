@@ -5,7 +5,8 @@ from sumodl.services import update_episodes
 from pathlib import Path
 import argparse
 import logging
-
+import schedule
+import time
 
 def _setup_logging(log_level):
     numeric_level = getattr(logging, log_level.upper(), None)
@@ -34,7 +35,15 @@ def command_line():
 
     _setup_logging(args.log)
 
+    logging.info(f"{media_directory=}")
     arke = ArkeRepo(Path(str(media_directory)))
     nhk = NHKSumoRepo()
 
+    # Run once
     update_episodes(arke, nhk)
+
+    # Keep running 
+    schedule.every().day.at("13:00").do(update_episodes, arke, nhk)
+    while True:
+        schedule.run_pending()
+        time.sleep(60)

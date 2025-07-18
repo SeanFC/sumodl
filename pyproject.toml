@@ -9,6 +9,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "playwright>=1.52.0",
     "requests>=2.32.3",
+    "schedule>=1.2.2",
     "yt-dlp>=2025.5.22",
 ]
 
